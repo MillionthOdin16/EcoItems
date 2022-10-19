@@ -21,3 +21,28 @@ gradle-app.setting
 
 # Mac OSX
 .DS_Store
+eco-core/core-plugin/out/production/resources/chains.yml
+eco-core/core-plugin/out/production/resources/config.yml
+eco-core/core-plugin/out/production/resources/eco.yml
+eco-core/core-plugin/out/production/resources/items.yml
+eco-core/core-plugin/out/production/resources/items/_example.yml
+eco-core/core-plugin/out/production/resources/items/armor_core.yml
+eco-core/core-plugin/out/production/resources/items/blank_reforge_stone.yml
+eco-core/core-plugin/out/production/resources/items/boss_core.yml
+eco-core/core-plugin/out/production/resources/items/bow_of_thirds.yml
+eco-core/core-plugin/out/production/resources/items/enchanted_cobblestone.yml
+eco-core/core-plugin/out/production/resources/items/enchanted_diamond.yml
+eco-core/core-plugin/out/production/resources/items/enchanted_emerald.yml
+eco-core/core-plugin/out/production/resources/items/enchanted_ender_eye.yml
+eco-core/core-plugin/out/production/resources/items/enchanted_ender_pearl.yml
+eco-core/core-plugin/out/production/resources/items/enchanted_iron_ingot.yml
+eco-core/core-plugin/out/production/resources/items/hardened_netherite_pickaxe.yml
+eco-core/core-plugin/out/production/resources/items/hardened_netherite_sword.yml
+eco-core/core-plugin/out/production/resources/items/infernal_spear.yml
+eco-core/core-plugin/out/production/resources/items/reaper_scythe.yml
+eco-core/core-plugin/out/production/resources/items/rogue_zweihander.yml
+eco-core/core-plugin/out/production/resources/items/talisman_core_1.yml
+eco-core/core-plugin/out/production/resources/items/talisman_core_2.yml
+eco-core/core-plugin/out/production/resources/items/talisman_core_3.yml
+eco-core/core-plugin/out/production/resources/lang.yml
+eco-core/core-plugin/out/production/resources/plugin.yml
