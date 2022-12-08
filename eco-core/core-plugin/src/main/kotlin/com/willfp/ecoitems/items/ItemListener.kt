@@ -4,8 +4,11 @@ import com.willfp.eco.core.EcoPlugin
 import com.willfp.eco.util.NumberUtils
 import com.willfp.libreforge.updateEffects
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
+import org.bukkit.event.block.Action
 import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerItemDamageEvent
 import org.bukkit.event.player.PlayerItemHeldEvent
 import kotlin.math.roundToInt
@@ -19,10 +22,23 @@ class ItemListener(
         plugin.scheduler.run { event.player.updateEffects() }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOW)
     fun onPlaceItem(event: BlockPlaceEvent) {
         ItemUtils.getEcoItem(event.itemInHand) ?: return
         if (event.itemInHand.type.isBlock) {
+            event.isCancelled = true
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    fun onPlaceItem2(event: PlayerInteractEvent) {
+        ItemUtils.getEcoItem(event.item) ?: return
+
+        if (event.item?.type?.isBlock != true) {
+            return
+        }
+
+        if (event.action == Action.RIGHT_CLICK_BLOCK) {
             event.isCancelled = true
         }
     }
