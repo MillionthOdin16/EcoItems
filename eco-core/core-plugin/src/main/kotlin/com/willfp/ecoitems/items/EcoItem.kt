@@ -8,12 +8,12 @@ import com.willfp.eco.core.items.Items
 import com.willfp.eco.core.items.builder.ItemStackBuilder
 import com.willfp.eco.core.recipe.Recipes
 import com.willfp.eco.core.registry.Registrable
+import com.willfp.ecoitems.slot.ItemSlots
 import com.willfp.libreforge.Holder
 import com.willfp.libreforge.ViolationContext
 import com.willfp.libreforge.conditions.Conditions
 import com.willfp.libreforge.effects.Effects
 import org.bukkit.inventory.ItemStack
-import org.bukkit.persistence.PersistentDataType
 import java.util.Objects
 
 class EcoItem(
@@ -33,26 +33,23 @@ class EcoItem(
 
     override val id = plugin.createNamespacedKey(id)
 
-    override fun getID(): String {
-        return this.id.key
-    }
-
     val lore: List<String> = config.getStrings("item.lore")
 
     val displayName: String = config.getString("item.display-name")
 
+    val slot = ItemSlots.getByID(config.getString("slot"))
+
+    // Defensive copy
     private val _itemStack: ItemStack = run {
         val itemConfig = config.getSubsection("item")
         ItemStackBuilder(Items.lookup(itemConfig.getString("item")).item).apply {
             setDisplayName(itemConfig.getFormattedString("display-name"))
             addLoreLines(
-                itemConfig.getFormattedStrings("lore").map { "${Display.PREFIX}$it" })
-            writeMetaKey(
-                plugin.namespacedKeyFactory.create("item"),
-                PersistentDataType.STRING,
-                id
+                itemConfig.getFormattedStrings("lore").map { "${Display.PREFIX}$it" }
             )
-        }.build()
+        }.build().apply {
+            ecoItem = this@EcoItem
+        }
     }
 
     val itemStack: ItemStack
@@ -62,7 +59,7 @@ class EcoItem(
 
     val customItem = CustomItem(
         plugin.namespacedKeyFactory.create(id),
-        { test -> ItemUtils.getEcoItem(test) == this },
+        { test -> test.ecoItem == this },
         itemStack
     ).apply { register() }
 
@@ -76,9 +73,13 @@ class EcoItem(
         )
     } else null
 
-    val baseDamage = config.getDouble("base-damage")
+    val baseDamage = config.getDoubleOrNull("base-damage")
 
-    val baseAttackSpeed = config.getDouble("base-attack-speed")
+    val baseAttackSpeed = config.getDoubleOrNull("base-attack-speed")
+
+    override fun getID(): String {
+        return this.id.key
+    }
 
     override fun equals(other: Any?): Boolean {
         if (other !is EcoItem) {

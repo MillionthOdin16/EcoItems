@@ -1,98 +1,63 @@
 package com.willfp.ecoitems.items
 
 import com.willfp.eco.core.fast.FastItemStack
-import com.willfp.eco.util.NamespacedKeyUtils
-import com.willfp.ecoitems.EcoItemsPlugin.Companion.instance
+import com.willfp.eco.core.fast.fast
+import com.willfp.eco.util.namespacedKeyOf
+import com.willfp.ecoitems.slot.ItemSlots
 import com.willfp.libreforge.ItemProvidedHolder
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.meta.ItemMeta
-import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.persistence.PersistentDataType
 
-object ItemUtils {
-    /**
-     * Instance of EcoItems.
-     */
-    private val PLUGIN = instance
+private val legacyKey = namespacedKeyOf("ecoweapons", "weapon")
+private val key = namespacedKeyOf("ecoitems", "item")
 
-    private val legacyKey = NamespacedKeyUtils.create("ecoweapons", "weapon")
-
-    /**
-     * Get EcoItem from an item.
-     *
-     * @param itemStack The itemStack to check.
-     * @return The EcoItem, or null if no EcoItem is found.
-     */
-    fun getEcoItem(itemStack: ItemStack?): EcoItem? {
-        itemStack ?: return null
-        val container = FastItemStack.wrap(itemStack).persistentDataContainer
-        return getEcoItem(container)
+var ItemStack?.ecoItem: EcoItem?
+    get() {
+        this ?: return null
+        val fis = this.fast()
+        return fis.ecoItem
+    }
+    set(value) {
+        this ?: return
+        val fis = this.fast()
+        fis.ecoItem = value
     }
 
-    /**
-     * Get EcoItem from an item.
-     *
-     * @param meta The itemStack to check.
-     * @return The EcoItem, or null if no EcoItem is found.
-     */
-    fun getEcoItem(meta: ItemMeta): EcoItem? {
-        val container = meta.persistentDataContainer
-        return getEcoItem(container)
-    }
+var FastItemStack.ecoItem: EcoItem?
+    get() {
+        val pdc = this.persistentDataContainer
 
-    private fun getEcoItem(container: PersistentDataContainer): EcoItem? {
-        val legacy = container.get(
-            legacyKey, PersistentDataType.STRING
-        )
-
-        if (legacy != null) {
-            container.set(
-                PLUGIN.namespacedKeyFactory.create("item"), PersistentDataType.STRING, legacy
-            )
-            container.remove(legacyKey)
+        if (pdc.get(legacyKey, PersistentDataType.STRING) != null) {
+            pdc.remove(legacyKey)
+            pdc.set(key, PersistentDataType.STRING, pdc.get(legacyKey, PersistentDataType.STRING)!!)
         }
 
-        val id = container.get(
-            PLUGIN.namespacedKeyFactory.create("item"), PersistentDataType.STRING
-        ) ?: return null
+        return EcoItems.getByID(pdc.get(key, PersistentDataType.STRING))
+    }
+    set(value) {
+        val pdc = this.persistentDataContainer
 
-        return EcoItems.getByID(id)
+        if (value == null) {
+            pdc.remove(key)
+        } else {
+            pdc.set(key, PersistentDataType.STRING, value.id.key)
+        }
     }
 
-    /**
-     * Get EcoItem on a player.
-     *
-     * @param player The player to check.
-     * @return The EcoItem, or null if no EcoItem is found.
-     */
-    fun getEcoItemsOnPlayer(player: Player): List<ItemProvidedHolder> {
-        val list = mutableListOf<ItemProvidedHolder>()
-
-        val mainhand = getEcoItem(player.inventory.itemInMainHand)
-        if (mainhand != null) {
-            list.add(
-                ItemProvidedHolder(
-                    mainhand, player.inventory.itemInMainHand
-                )
-            )
-        }
-
-        if (PLUGIN.configYml.getBool("check-offhand")) {
-            val offhand = getEcoItem(player.inventory.itemInOffHand)
-            if (offhand != null) {
-                list.add(
-                    ItemProvidedHolder(
-                        offhand, player.inventory.itemInOffHand
-                    )
-                )
+val Player.ecoItems: Collection<ItemProvidedHolder>
+    get() = ItemSlots.flatMap { slot ->
+        slot.getItems(this)
+            .filterNotNull()
+            .mapNotNull { item ->
+                item.ecoItem
+                    ?.takeIf { it.slot == slot }
+                    ?.let { it to item }
             }
-        }
+    }.distinctBy { it.first }
+        .map { (ecoItem, item) -> ItemProvidedHolder(ecoItem, item) }
 
-        return list
-    }
-}
 
 val Material.baseDamage: Double
     get() {
